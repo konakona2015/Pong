@@ -75,8 +75,8 @@ namespace Pong
            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
-            ballPos += ballVelocity;
+            ballPos -= ballVelocity;
+
             // Start the ball in a random direction
             randDir = rand.Next(0, 4);
             var kstate = Keyboard.GetState();
