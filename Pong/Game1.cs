@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -11,9 +12,15 @@ namespace Pong
         int screenHeight = 576;
         int paddleLength = 100;
         int paddleThickness = 10;
-        bool isPlaying = true;
-        static Random rand = new Random();
+        int p1 = 0;
+        int p2 = 0;
         int randDir;
+        bool isPlaying = true;
+        string won = "";
+        static Random rand = new Random();
+
+        private SoundEffect beep;
+        SpriteFont num;
 
         Texture2D paddle;
         Texture2D ball;
@@ -23,6 +30,7 @@ namespace Pong
         Vector2 coor2 = new Vector2(1024 - 18, (576 / 2) - 50);
         Vector2 ballPos = new Vector2((1024 / 2) - 5, (576 / 2) - 5);
         Vector2 ballVelocity = new Vector2(0, 0);
+        Vector2 winText = new Vector2(0, 0);
 
         float paddleSpeed = 700f;
         float ballSpeed = 400f;
@@ -68,6 +76,8 @@ namespace Pong
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            beep = Content.Load<SoundEffect>("beep");
+            num = Content.Load<SpriteFont>("FFF Forward");
         }
 
         protected override void Update(GameTime gameTime)
@@ -128,13 +138,23 @@ namespace Pong
                 }
 
                 isPlaying = false;
+                won = "";
             }
 
             // Ball
 
             // Miss
-            if (ballPos.X < 13 || ballPos.X > screenWidth - 23)
+            if (ballPos.X < 13)
+            {
+                p2++;
                 isPlaying = true;
+            }
+
+            if (ballPos.X > screenWidth - 23)
+            {
+                p1++;
+                isPlaying = true;
+            }
 
             // Resets the ball to center
             if (isPlaying == true)
@@ -158,11 +178,30 @@ namespace Pong
             if (ballPos.X < coor.X + paddleThickness && ballPos.Y > coor.Y && ballPos.Y < coor.Y + paddleLength)
             {
                 ballVelocity.X = -ballVelocity.X;
+                beep.Play();
             }
             // Player 2 paddle collision check
             if (ballPos.X > coor2.X - paddleThickness && ballPos.Y > coor2.Y && ballPos.Y < coor2.Y + paddleLength)
             {
                 ballVelocity.X = -ballVelocity.X;
+                beep.Play();
+            }
+
+            if (p1 == 10)
+            {
+                winText.Y = 500;
+                winText.X = 180;
+                won = "WIN!";
+                p1 = 0;
+                p2 = 0;
+            }
+            if (p2 == 10)
+            {
+                winText.Y = 500;
+                winText.X = 1024 - 300;
+                won = "WIN!";
+                p1 = 0;
+                p2 = 0;
             }
             base.Update(gameTime);
         }
@@ -178,6 +217,9 @@ namespace Pong
             _spriteBatch.Draw(ball, ballPos, Color.White);
             _spriteBatch.Draw(line, new Vector2((1024 / 2) - 1, 0), Color.White);
 
+            _spriteBatch.DrawString(num, p1.ToString(), new Vector2(400, 10), Color.White);
+            _spriteBatch.DrawString(num, p2.ToString(), new Vector2(1024 - 429, 10), Color.White);
+            _spriteBatch.DrawString(num, won, winText, Color.White);
             _spriteBatch.End();
 
             base.Draw(gameTime);
