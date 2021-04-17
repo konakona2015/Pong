@@ -13,8 +13,7 @@ namespace Pong
         int paddleThickness = 10;
         bool isPlaying = true;
         static Random rand = new Random();
-
-        int randDir = rand.Next(0, 3);
+        int randDir;
 
         Texture2D paddle;
         Texture2D ball;
@@ -73,10 +72,13 @@ namespace Pong
 
         protected override void Update(GameTime gameTime)
         {
-            ballPos += ballVelocity;
+           
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
+            
+            ballPos += ballVelocity;
+            // Start the ball in a random direction
+            randDir = rand.Next(0, 4);
             var kstate = Keyboard.GetState();
 
             // Paddle Player 1
@@ -85,12 +87,12 @@ namespace Pong
             if (kstate.IsKeyDown(Keys.S))
                 coor.Y += paddleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Paddle Player 2
             if (coor.Y > screenHeight - paddle.Height)
                 coor.Y = screenHeight - paddle.Height;
             else if (coor.Y < 0)
                 coor.Y = 0;
 
+            // Paddle Player 2
             if (kstate.IsKeyDown(Keys.Up))
                 coor2.Y -= paddleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (kstate.IsKeyDown(Keys.Down))
@@ -103,17 +105,35 @@ namespace Pong
 
             // Start Game
             if (kstate.IsKeyDown(Keys.Space) && isPlaying)
-            { 
+            {
+                // Start the ball in a random direction
+                switch (randDir)
+                {
+                    case 0:
+                        ballVelocity.Y = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        ballVelocity.X = -ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        break;
+                    case 1:
+                        ballVelocity.Y = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        ballVelocity.X = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        break;
+                    case 2:
+                        ballVelocity.Y = -ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        ballVelocity.X = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        break;
+                    case 3:
+                        ballVelocity.Y = -ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        ballVelocity.X = -ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        break;
+                }
 
-                ballVelocity.Y = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-                ballVelocity.X = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
                 isPlaying = false;
             }
 
             // Ball
 
-            // Ball goes off screen
-            if (ballPos.X < 0 || ballPos.X > screenWidth)
+            // Miss
+            if (ballPos.X < 13 || ballPos.X > screenWidth - 23)
                 isPlaying = true;
 
             // Resets the ball to center
@@ -134,11 +154,12 @@ namespace Pong
                 ballVelocity.Y = -ballVelocity.Y;
             }
 
+            // Player 1 paddle collision check
             if (ballPos.X < coor.X + paddleThickness && ballPos.Y > coor.Y && ballPos.Y < coor.Y + paddleLength)
             {
                 ballVelocity.X = -ballVelocity.X;
             }
-
+            // Player 2 paddle collision check
             if (ballPos.X > coor2.X - paddleThickness && ballPos.Y > coor2.Y && ballPos.Y < coor2.Y + paddleLength)
             {
                 ballVelocity.X = -ballVelocity.X;
